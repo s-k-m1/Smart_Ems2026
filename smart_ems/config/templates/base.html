@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Smart EMS</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+
+    <style>
+        body {
+            margin: 0;
+            background: #f4f6f9;
+            transition: all 0.3s ease;
+        }
+
+        /* ================= DARK MODE ================= */
+        body.dark-mode {
+            background: #0f172a;
+            color: #e5e7eb;
+        }
+
+        body.dark-mode .topbar {
+            background: #0b1220;
+        }
+
+        body.dark-mode .sidebar {
+            background: #0b1220;
+        }
+
+        body.dark-mode .sidebar a {
+            color: #e5e7eb;
+        }
+
+        body.dark-mode .sidebar a:hover {
+            background: #1f2937;
+        }
+
+        /* ================= SIDEBAR ================= */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 240px;
+            height: 100vh;
+            background: #1f2937;
+            padding-top: 20px;
+
+            /* ✅ FIXED SCROLL */
+            overflow-y: auto;
+            overflow-x: hidden;
+
+            scrollbar-width: thin;
+        }
+
+        /* scrollbar styling */
+        .sidebar::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .sidebar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .sidebar::-webkit-scrollbar-thumb {
+            background: #4b5563;
+            border-radius: 10px;
+        }
+
+        .sidebar::-webkit-scrollbar-thumb:hover {
+            background: #9ca3af;
+        }
+
+        .sidebar h4 {
+            color: white;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        .sidebar a {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: white;
+            padding: 12px 18px;
+            text-decoration: none;
+            transition: 0.2s;
+        }
+
+        .sidebar a:hover {
+            background: #374151;
+            transform: translateX(4px);
+        }
+
+        /* ================= TOPBAR ================= */
+        .topbar {
+            margin-left: 240px;
+            background: #111827;
+            color: white;
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        /* ================= CONTENT ================= */
+        .content {
+            margin-left: 240px;
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        /* ================= COLLAPSE ================= */
+        body.sidebar-collapsed .sidebar {
+            width: 70px;
+        }
+
+        body.sidebar-collapsed .sidebar a span {
+            display: none;
+        }
+
+        body.sidebar-collapsed .sidebar a {
+            justify-content: center;
+        }
+
+        body.sidebar-collapsed .topbar,
+        body.sidebar-collapsed .content {
+            margin-left: 70px;
+        }
+
+        /* ================= HIDE ================= */
+        body.sidebar-hidden .sidebar {
+            transform: translateX(-100%);
+        }
+
+        body.sidebar-hidden .topbar,
+        body.sidebar-hidden .content {
+            margin-left: 0;
+        }
+
+        /* ================= BUTTONS ================= */
+        .toggle-btn, .mode-btn {
+            cursor: pointer;
+            font-size: 18px;
+            margin-right: 10px;
+        }
+    </style>
+</head>
+
+<body>
+
+<!-- SIDEBAR -->
+<div class="sidebar" id="sidebar">
+
+    <h4>EMS</h4>
+    <hr class="text-white">
+
+    <a href="/"><i class="fa fa-home"></i> <span>Dashboard</span></a>
+    <a href="/employees/"><i class="fa fa-users"></i> <span>Employees</span></a>
+    <a href="/attendance/"><i class="fa fa-clock"></i> <span>Attendance</span></a>
+    <a href="/payroll/"><i class="fa fa-money-bill"></i> <span>Payroll</span></a>
+    <a href="/notice/"><i class="fa fa-bullhorn"></i> <span>Notice</span></a>
+    <a href="/admin/"><i class="fa fa-cog"></i> <span>Admin</span></a>
+    
+
+</div>
+
+<!-- TOPBAR -->
+<div class="topbar">
+
+    <div class="d-flex align-items-center">
+
+        <i class="fa fa-bars toggle-btn" onclick="toggleSidebar()" id="toggleIcon"></i>
+        <strong>Smart EMS Dashboard</strong>
+
+    </div>
+
+    <div class="d-flex align-items-center">
+
+        <i class="fa fa-moon mode-btn" onclick="toggleMode()" id="modeIcon"></i>
+
+        <a href="/login/" class="btn btn-sm btn-success me-2">Login</a>
+        <a href="/logout/" class="btn btn-sm btn-danger">Logout</a>
+
+    </div>
+
+</div>
+
+<!-- CONTENT -->
+<div class="content">
+    {% block content %}
+    <h2>Dashboard Loaded Successfully</h2>
+    {% endblock %}
+</div>
+
+<!-- JS -->
+<script>
+
+function toggleSidebar() {
+    const body = document.body;
+    const icon = document.getElementById("toggleIcon");
+
+    body.classList.toggle("sidebar-collapsed");
+    body.classList.remove("sidebar-hidden");
+
+    if (body.classList.contains("sidebar-collapsed")) {
+        icon.classList.replace("fa-bars", "fa-angles-left");
+    } else {
+        icon.classList.replace("fa-angles-left", "fa-bars");
+    }
+}
+
+/* ================= DARK MODE ================= */
+function toggleMode() {
+    const body = document.body;
+    const icon = document.getElementById("modeIcon");
+
+    body.classList.toggle("dark-mode");
+
+    if (body.classList.contains("dark-mode")) {
+        icon.classList.replace("fa-moon", "fa-sun");
+        localStorage.setItem("mode", "dark");
+    } else {
+        icon.classList.replace("fa-sun", "fa-moon");
+        localStorage.setItem("mode", "light");
+    }
+}
+
+/* ================= RESTORE ================= */
+window.onload = function () {
+
+    if (localStorage.getItem("mode") === "dark") {
+        document.body.classList.add("dark-mode");
+        document.getElementById("modeIcon").classList.replace("fa-moon", "fa-sun");
+    }
+
+};
+
+</script>
+
+</body>
+</html>

@@ -42,7 +42,9 @@ INSTALLED_APPS = [
     'account',
     'employee',
     'department',
-    'attendance'
+    'attendance',
+    'config',
+    'payroll'
 ]
 
 

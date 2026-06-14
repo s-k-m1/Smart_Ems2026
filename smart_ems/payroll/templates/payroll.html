@@ -1,0 +1,209 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="container-fluid">
+
+    <!-- ================= HEADER ================= -->
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h3 class="fw-bold">
+            <i class="fa fa-money-bill"></i> Payroll Dashboard
+        </h3>
+
+        <button class="btn btn-success btn-sm">
+            + Generate Payroll
+        </button>
+    </div>
+
+    <!-- ================= INFO BAR ================= -->
+    <div class="alert alert-primary d-flex justify-content-between align-items-center">
+        <div>
+            <strong>Month:</strong> June 2026
+        </div>
+        <div>
+            <strong>Date:</strong> <span id="todayDate"></span>
+        </div>
+    </div>
+
+    <!-- ================= TOP STATS ================= -->
+    <div class="row g-3 mb-4">
+
+        <div class="col-md-4">
+            <div class="card shadow-sm p-3 text-center border-success">
+                <h4 id="totalSalary">0</h4>
+                <small class="text-success">Total Payroll</small>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card shadow-sm p-3 text-center border-warning">
+                <h4 id="pendingSalary">0</h4>
+                <small class="text-warning">Pending</small>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card shadow-sm p-3 text-center border-danger">
+                <h4 id="deduction">0</h4>
+                <small class="text-danger">Deductions</small>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- ================= SUMMARY GRAPH ================= -->
+    <div class="row g-3 mb-4">
+
+        <div class="col-md-4">
+            <div class="card shadow-sm p-3">
+                <h6 class="mb-3">Payroll Overview</h6>
+                <div style="height: 180px;">
+                    <canvas id="payrollChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-8">
+            <div class="card shadow-sm p-3">
+
+                <h6 class="mb-3">Salary Breakdown</h6>
+
+                <div class="row text-center">
+
+                    <div class="col">
+                        <div class="p-3 border rounded">
+                            <h5 id="paidBox">0</h5>
+                            <small class="text-success">Paid</small>
+                        </div>
+                    </div>
+
+                    <div class="col">
+                        <div class="p-3 border rounded">
+                            <h5 id="pendingBox">0</h5>
+                            <small class="text-warning">Pending</small>
+                        </div>
+                    </div>
+
+                    <div class="col">
+                        <div class="p-3 border rounded">
+                            <h5 id="deductionBox">0</h5>
+                            <small class="text-danger">Deduction</small>
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+
+    <!-- ================= TABLE ================= -->
+    <div class="card shadow-sm p-3">
+
+        <h6 class="mb-3">Employee Payroll Records</h6>
+
+        <table class="table table-hover align-middle">
+
+            <thead class="table-dark">
+                <tr>
+                    <th>Employee</th>
+                    <th>Month</th>
+                    <th>Basic Salary</th>
+                    <th>Deduction</th>
+                    <th>Net Salary</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+
+            <tbody id="payrollTable">
+
+                {% for p in payroll %}
+
+                    {% if request.user.employee.role == 'employee' %}
+
+                        {% if p.employee.id == request.user.employee.id %}
+                        <tr>
+                            <td>{{ p.employee.name }}</td>
+                            <td>{{ p.month }}</td>
+                            <td>{{ p.basic_salary }}</td>
+                            <td>{{ p.deduction }}</td>
+                            <td>{{ p.net_salary }}</td>
+                            <td>
+                                <span class="badge bg-success">{{ p.status }}</span>
+                            </td>
+                        </tr>
+                        {% endif %}
+
+                    {% else %}
+
+                        <tr>
+                            <td>{{ p.employee.name }}</td>
+                            <td>{{ p.month }}</td>
+                            <td>{{ p.basic_salary }}</td>
+                            <td>{{ p.deduction }}</td>
+                            <td>{{ p.net_salary }}</td>
+                            <td>
+                                <span class="badge bg-{{ p.status }}">
+                                    {{ p.status }}
+                                </span>
+                            </td>
+                        </tr>
+
+                    {% endif %}
+
+                {% endfor %}
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</div>
+
+<!-- ================= CHART JS ================= -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+
+/* ================= DATE ================= */
+document.getElementById("todayDate").innerText =
+    new Date().toDateString();
+
+/* ================= SAMPLE DATA ================= */
+let paid = 120000;
+let pending = 30000;
+let deduction = 10000;
+
+/* ================= UI UPDATE ================= */
+document.getElementById("totalSalary").innerText = paid + pending;
+document.getElementById("pendingSalary").innerText = pending;
+document.getElementById("deduction").innerText = deduction;
+
+document.getElementById("paidBox").innerText = paid;
+document.getElementById("pendingBox").innerText = pending;
+document.getElementById("deductionBox").innerText = deduction;
+
+/* ================= CHART ================= */
+new Chart(document.getElementById('payrollChart'), {
+    type: 'doughnut',
+    data: {
+        labels: ['Paid', 'Pending', 'Deduction'],
+        datasets: [{
+            data: [paid, pending, deduction],
+            backgroundColor: ['#22c55e', '#f59e0b', '#ef4444'],
+            borderColor: '#fff',
+            borderWidth: 2
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        cutout: '72%'
+    }
+});
+
+</script>
+
+{% endblock %}

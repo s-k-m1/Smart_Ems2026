@@ -1,0 +1,171 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="container-fluid">
+
+    <!-- ================= HEADER ================= -->
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h3 class="fw-bold">
+            <i class="fa fa-users"></i> Employees
+        </h3>
+
+        {% if request.user.employee.role != 'employee' %}
+        <button class="btn btn-primary btn-sm">
+            + Add Employee
+        </button>
+        {% endif %}
+    </div>
+
+    <!-- ================= SEARCH + FILTER ================= -->
+    <div class="row mb-4">
+
+        <div class="col-md-6">
+            <input type="text" class="form-control" placeholder="Search employee...">
+        </div>
+
+        <div class="col-md-3">
+            <select class="form-control">
+                <option>All Departments</option>
+                <option>HR</option>
+                <option>IT</option>
+                <option>Finance</option>
+            </select>
+        </div>
+
+        <div class="col-md-3">
+            <button class="btn btn-outline-secondary w-100">
+                <i class="fa fa-filter"></i> Filter
+            </button>
+        </div>
+
+    </div>
+
+    <!-- ================= STATS ================= -->
+    <div class="row g-3 mb-4">
+
+        <div class="col-md-4">
+            <div class="card shadow-sm p-3 text-center border-primary">
+                <h4>{{ total_employees }}</h4>
+                <small>Total Employees</small>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card shadow-sm p-3 text-center border-success">
+                <h4>{{ active_employees }}</h4>
+                <small>Active</small>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card shadow-sm p-3 text-center border-danger">
+                <h4>{{ inactive_employees }}</h4>
+                <small>Inactive</small>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- ================= EMPLOYEE GRID ================= -->
+    <div class="row g-3">
+
+        {% for e in employees %}
+
+            <!-- 🔒 ROLE SECURITY -->
+            {% if request.user.employee.role == 'employee' %}
+
+                {% if e.id == request.user.employee.id %}
+
+                <div class="col-md-4">
+                    <div class="card shadow-sm p-3">
+
+                        <div class="d-flex align-items-center gap-3">
+
+                            <div class="bg-primary text-white rounded-circle d-flex justify-content-center align-items-center"
+                                 style="width:50px;height:50px;">
+                                {{ e.name|slice:":1" }}
+                            </div>
+
+                            <div>
+                                <h6 class="mb-0">{{ e.name }}</h6>
+                                <small class="text-muted">{{ e.role|upper }}</small>
+                            </div>
+
+                        </div>
+
+                        <hr>
+
+                        <p class="mb-1"><strong>Department:</strong> {{ e.department }}</p>
+                        <p class="mb-1"><strong>Email:</strong> {{ e.email }}</p>
+                        <p class="mb-1"><strong>Status:</strong>
+                            <span class="badge bg-success">Active</span>
+                        </p>
+
+                    </div>
+                </div>
+
+                {% endif %}
+
+            {% else %}
+
+            <!-- HR / MANAGER / ADMIN VIEW ALL -->
+            <div class="col-md-4">
+
+                <div class="card shadow-sm p-3">
+
+                    <div class="d-flex justify-content-between">
+
+                        <div class="d-flex align-items-center gap-3">
+
+                            <div class="bg-dark text-white rounded-circle d-flex justify-content-center align-items-center"
+                                 style="width:50px;height:50px;">
+                                {{ e.name|slice:":1" }}
+                            </div>
+
+                            <div>
+                                <h6 class="mb-0">{{ e.name }}</h6>
+                                <small class="text-muted">{{ e.role|upper }}</small>
+                            </div>
+
+                        </div>
+
+                        <span class="badge bg-primary">{{ e.department }}</span>
+
+                    </div>
+
+                    <hr>
+
+                    <p class="mb-1"><strong>Email:</strong> {{ e.email }}</p>
+                    <p class="mb-1"><strong>Phone:</strong> {{ e.phone }}</p>
+
+                    <div class="d-flex justify-content-between align-items-center mt-2">
+
+                        <span>
+                            {% if e.is_active %}
+                                <span class="badge bg-success">Active</span>
+                            {% else %}
+                                <span class="badge bg-danger">Inactive</span>
+                            {% endif %}
+                        </span>
+
+                        <div>
+                            <button class="btn btn-sm btn-outline-primary">View</button>
+                            <button class="btn btn-sm btn-outline-danger">Delete</button>
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            {% endif %}
+
+        {% endfor %}
+
+    </div>
+
+</div>
+
+{% endblock %}

@@ -1,0 +1,220 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="container-fluid">
+
+    <!-- ================= HEADER ================= -->
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h3 class="fw-bold">
+            <i class="fa fa-clock"></i> Attendance Dashboard
+        </h3>
+
+        <button class="btn btn-primary btn-sm">
+            + Mark Attendance
+        </button>
+    </div>
+
+    <!-- ================= OFFICE INFO ================= -->
+    <div class="alert alert-info d-flex justify-content-between align-items-center">
+        <div>
+            <strong>Office Time:</strong> 09:00 AM - 05:00 PM
+        </div>
+        <div>
+            <strong>Date:</strong> <span id="todayDate"></span>
+        </div>
+    </div>
+
+    <!-- ================= TOP STATS ================= -->
+    <div class="row g-3 mb-4">
+
+        <div class="col-md-3">
+            <div class="card shadow-sm p-3 text-center border-success">
+                <h4 id="presentCount">0</h4>
+                <small class="text-success">Present</small>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card shadow-sm p-3 text-center border-warning">
+                <h4 id="lateCount">0</h4>
+                <small class="text-warning">Late</small>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card shadow-sm p-3 text-center border-danger">
+                <h4 id="absentCount">0</h4>
+                <small class="text-danger">Absent</small>
+            </div>
+        </div>
+
+        <!-- NEW: ROLE INFO -->
+        <div class="col-md-3">
+            <div class="card shadow-sm p-3 text-center border-primary">
+                <h5 class="mb-0">
+                    {% if request.user.is_authenticated %}
+                        {{ request.user.employee.role|upper }}
+                    {% else %}
+                        GUEST
+                    {% endif %}
+                </h5>
+                <small class="text-primary">Your Role</small>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- ================= GRAPH + SUMMARY ================= -->
+    <div class="row g-3 mb-4">
+
+        <div class="col-md-4">
+            <div class="card shadow-sm p-3">
+                <h6 class="mb-3">Attendance Overview</h6>
+                <div style="height: 180px;">
+                    <canvas id="attendanceChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-8">
+            <div class="card shadow-sm p-3">
+
+                <h6 class="mb-3">Quick Summary</h6>
+
+                <div class="row text-center">
+
+                    <div class="col">
+                        <div class="p-3 border rounded">
+                            <h5 id="presentBox">0</h5>
+                            <small class="text-success">Present</small>
+                        </div>
+                    </div>
+
+                    <div class="col">
+                        <div class="p-3 border rounded">
+                            <h5 id="lateBox">0</h5>
+                            <small class="text-warning">Late</small>
+                        </div>
+                    </div>
+
+                    <div class="col">
+                        <div class="p-3 border rounded">
+                            <h5 id="absentBox">0</h5>
+                            <small class="text-danger">Absent</small>
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+
+    <!-- ================= TABLE (SECURITY FIXED) ================= -->
+    <div class="card shadow-sm p-3">
+
+        <h6 class="mb-3">Employee Attendance Records</h6>
+
+        <table class="table table-hover align-middle">
+
+            <thead class="table-dark">
+                <tr>
+                    <th>Employee</th>
+                    <th>Date</th>
+                    <th>Check-in Time</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+
+            <tbody id="attendanceTable">
+                <!-- ONLY ALLOWED DATA WILL BE SHOWN FROM BACKEND -->
+                {% for a in data %}
+
+                    {% if request.user.employee.role == 'employee' %}
+
+                        <!-- EMPLOYEE: ONLY SELF DATA -->
+                        {% if a.employee.id == request.user.employee.id %}
+                        <tr>
+                            <td>{{ a.employee.name }}</td>
+                            <td>{{ a.date }}</td>
+                            <td>{{ a.check_in }}</td>
+                            <td>
+                                <span class="badge bg-success">
+                                    {{ a.status }}
+                                </span>
+                            </td>
+                        </tr>
+                        {% endif %}
+
+                    {% else %}
+
+                        <!-- HR / MANAGER / ADMIN: FULL DATA -->
+                        <tr>
+                            <td>{{ a.employee.name }}</td>
+                            <td>{{ a.date }}</td>
+                            <td>{{ a.check_in }}</td>
+                            <td>
+                                <span class="badge bg-{{ a.status }}">
+                                    {{ a.status }}
+                                </span>
+                            </td>
+                        </tr>
+
+                    {% endif %}
+
+                {% endfor %}
+            </tbody>
+
+        </table>
+
+    </div>
+
+</div>
+
+<!-- ================= CHART JS ================= -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+
+/* ================= DATE ================= */
+document.getElementById("todayDate").innerText =
+    new Date().toDateString();
+
+/* ================= SAMPLE (REMOVE AFTER BACKEND) ================= */
+let present = 10;
+let late = 3;
+let absent = 2;
+
+/* ================= UI UPDATE ================= */
+document.getElementById("presentCount").innerText = present;
+document.getElementById("lateCount").innerText = late;
+document.getElementById("absentCount").innerText = absent;
+
+document.getElementById("presentBox").innerText = present;
+document.getElementById("lateBox").innerText = late;
+document.getElementById("absentBox").innerText = absent;
+
+/* ================= SECURE CHART ================= */
+new Chart(document.getElementById('attendanceChart'), {
+    type: 'doughnut',
+    data: {
+        labels: ['Present', 'Late', 'Absent'],
+        datasets: [{
+            data: [present, late, absent],
+            backgroundColor: ['#22c55e', '#f59e0b', '#ef4444'],
+            borderWidth: 2,
+            borderColor: '#fff'
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        cutout: '72%'
+    }
+});
+
+</script>
+
+{% endblock %}
